@@ -26,16 +26,18 @@ dependencies in an AMD style Javascript module."
 (defun amd-init ()
   "Make current buffer into an AMD module."
   (interactive)
-  (if (amd--find-header)
-    (message "AMD header already exists.")
-    (amd--write-empty-header)))
+  (save-excursion
+    (if (amd--find-header)
+      (message "AMD header already exists.")
+      (amd--write-empty-header))))
 
 (defun amd-add-id ()
   "Add AMD depenency to header"
   (interactive)
-  (let ((new-id (read-string "Give AMD module id: ")))
-    (let ((header (amd--find-or-create-header)))
-      (amd--header-add new-id (amd--var-from-id new-id) header)
-      (amd--write-header header))))
+  (save-excursion
+    (let ((new-id (read-string "Give AMD module id: ")))
+      (let ((header (amd--find-or-create-header)))
+        (amd--header-add new-id (amd--var-from-id new-id) header)
+        (amd--write-header header)))))
 
 (provide 'amd-mode)

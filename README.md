@@ -5,7 +5,7 @@ AMD minor mode for Emacs to easily work with AMD dependencies. Some ideas were k
 
 Features:
  * Function amd-init makes current buffer into AMD module, unles it already is.
- * AMD dependencies are sorted alphabetically, not insertion order, for easier searching.
+ * AMD dependencies are sorted alphabetically, not insertion order, for easier searching. A double insertion will do nothing.
  * Function amd-add-id allows you to add a dependency by specifying a module id.
 
 Add dependency from file:
