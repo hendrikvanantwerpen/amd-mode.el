@@ -14,11 +14,11 @@
 
 (defun amd--parse-var-list (string)
   (mapcar (lambda (s) (amd--trim s))
-          (split-string (amd--trim (amd--strip-parens (amd--trim string))) ",")))
+          (split-string (amd--trim (amd--strip-parens (amd--trim string))) "," t)))
 
 (defun amd--parse-id-list (string)
   (mapcar (lambda (s) (amd--trim (amd--strip-parens (amd--trim s))))
-          (split-string (amd--trim (amd--strip-parens (amd--trim string))) ",")))
+          (split-string (amd--trim (amd--strip-parens (amd--trim string))) "," t)))
 
 (defun amd--make-header (ids vars id-region var-region)
   (if (equal (length ids) (length vars))
@@ -105,7 +105,7 @@
 
 (defun amd--find-header ()
   "Find the AMD header and parse it"
-  (beginning-of-buffer)
+  (goto-char (point-min))
   (if (search-forward-regexp amd--header-regexp nil t)
     (let ((raw-ids (match-string 1))
           (raw-vars (match-string 2)) 
@@ -116,12 +116,11 @@
         (amd--make-header ids vars id-region var-region)))))
 
 (defun amd--write-empty-header ()
-  (delete-trailing-whitespace)
   (indent-region (point-min) (point-max) nil)
-  (beginning-of-buffer)
+  (goto-char (point-min))
   (insert "define([],function(){\n")
-  (end-of-buffer)
-  (insert "});"))
+  (goto-char (point-max))
+  (insert "\n});"))
 
 (defun amd--find-or-create-header ()
   (let ((header (amd--find-header)))
