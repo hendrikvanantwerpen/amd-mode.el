@@ -5,7 +5,7 @@
 (setq amd-dep-norm-handlers (make-hash-table :test 'equal))
 (setq amd-dep-to-var-handlers (make-hash-table :test 'equal))
 (setq amd-dep-to-file-handlers (make-hash-table :test 'equal))
-(setq amd-dep-from-file-handlers ())
+(setq amd-dep-from-file-handlers nil)
 
 (setq amd-dep-module-id-re
       "^\\(?:[[:alnum:]-_\.]+/\\)*\\([[:alnum:]-_]+\\)$")
@@ -80,7 +80,7 @@
 (defun amd-dep-module-to-var (resource)
   (if (string-match amd-dep-module-id-re resource)
       (let ((name (match-string 1 resource)))
-        (camelize name)))))
+        (camelize name))))
 
 (puthash nil (lambda (resource) (amd-dep-module-norm resource)) amd-dep-norm-handlers)
 (puthash nil (lambda (resource) (amd-dep-module-to-var resource)) amd-dep-to-var-handlers)
@@ -102,4 +102,5 @@
 (puthash "text" (lambda (resource) (amd-dep-text-plugin-norm resource)) amd-dep-norm-handlers)
 (puthash "text" (lambda (resource) (amd-dep-text-plugin-to-var resource)) amd-dep-to-var-handlers)
 (add-to-list 'amd-dep-from-file-handlers (lambda (file) (amd-dep-text-plugin-from-file file)))
+
 (provide 'amd-dep)
