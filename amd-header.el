@@ -1,3 +1,5 @@
+(require 'cl)
+(require 'amd-util)
 
 ;;; Readin and writing the header
 
@@ -65,7 +67,6 @@
                                        ",\n") "\n]")))))
 
 (defun amd--write-empty-header ()
-  (indent-region (point-min) (point-max) nil)
   (goto-char (point-min))
   (insert "define([],function(){\n")
   (goto-char (point-max))
@@ -98,30 +99,38 @@
   (car (cdr (cdr header))))
 
 (defun amd--header-ids (header)
-  (let ((table (amd--header-table header))
-        (result ()))
-    (maphash (lambda (kk vv)
-               (setq result (cons kk result)))
-             table)
-    (sort result 'string<)))
+  "Return a sorted list of all module ids."
+  (sort (hash-table-keys (amd--header-table header))
+        'string<))
 
 (defun amd--header-vars (header)
-  (mapcar (lambda (id) (gethash id (amd--header-table header)))
-          (amd--header-ids header)))
+  "Return a list of all variable names in the same order as amd--header-ids."
+  (hash-table-values (amd--header-table header)
+                     (amd--header-ids header)))
 
-(defun amd--header-add (id var header)
-  (puthash id var (amd--header-table header)))
+(defun amd--header-add (dep var header)
+  "Add a module ID and return the new or already existing variable name."
+  (let* ((table (amd--header-table header))
+         (curvar (gethash dep table)))
+    (if curvar
+        curvar
+      (let ((newvar (amd--header-unique-var (amd--header-safe-var var) header)))
+        (puthash dep newvar table)
+        newvar))))
+
+(defun amd--header-safe-var (var)
+  (replace-regexp-in-string "[^[:alnum:]_$]+" "" var))
+
+(defun amd--header-unique-var (var header)
+  (unique-string var (amd--header-vars header)))
 
 (defun amd--header-var-by-id (id header)
+  "Return the variable name for a module id or nil."
   (gethash id (amd--header-table header)))
 
 (defun amd--header-id-by-var (var header)
-  (let (id)
-    (maphash (lambda (kk vv)
-               (if (equals vv var)
-                   (setq id kk)))
-             (amd--header-table header))
-    (identity id)))
+  "Return the variable name for a module id or nil."
+  (hash-table-find var (amd--header-table header)))
 
 (defun amd--header-del-id (id header)
   (remhash id (amd--header-table header)))
@@ -146,8 +155,4 @@
 
 (defun amd--delete-region (region)
   (delete-region (amd--region-start region) (amd--region-end region)))
-
-(defun cadr (l)
-  (car (cdr l)))
-
 (provide 'amd-header)
