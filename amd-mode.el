@@ -38,29 +38,31 @@ dependencies in an AMD style Javascript module."
   "Add AMD dependency to header by file"
   (interactive)
   (save-excursion
-    (let ((new-file (read-file-name "Select dependency file: ")))
-      (if (if (not (file-exists-p new-file))
-            (if (y-or-n-p "File does not exist, do you want to create it? ")
-                (with-current-buffer (find-file-other-window new-file)
-                  (set-buffer-modified-p t)
-                  t))
-          t)
-          (let* ((deps (amd-deps-from-file new-file))
-                 (count (length deps))
-                 (dep (cond ((= 0 count)
-                             (message "No options found for this file.")
-                             nil)
-                            ((= 1 count)
-                             (car deps))
-                            (t
-                             (let ((depstr
-                                    (completing-read "Select import: "
-                                                     (mapcar 'amd-dep-format deps))))
-                               (if (and depstr (not (equal "" depstr)))
-                                   (amd-dep-parse depstr)))))))
-            (if (not dep)
-                (message "Failed to add dependency.")
-              (amd-write-dep-to-header dep)))))))
+    (let ((new-file (ido-read-file-name "Select dependency file: ")))
+      (when (if (not (file-exists-p new-file))
+                (when (y-or-n-p "File does not exist, create? ")
+                  (with-current-buffer (find-file-other-window new-file)
+                    (save-buffer)
+                    (set-buffer-modified-p t)
+                    t))
+              t)
+        (let* ((deps (amd-deps-from-file new-file))
+               (count (length deps))
+               (dep (cond ((= 0 count)
+                           (message "No options found for this file.")
+                           nil)
+                          ((= 1 count)
+                           (car deps))
+                          (t
+                           (let ((depstr
+                                  (ido-completing-read
+                                   "Select import: "
+                                   (mapcar 'amd-dep-format deps))))
+                             (if (and depstr (not (equal "" depstr)))
+                                 (amd-dep-parse depstr)))))))
+          (if (not dep)
+              (message "Failed to add dependency.")
+            (amd-write-dep-to-header dep)))))))
 
 (defun amd-write-dep-to-header (dep)
   (let* ((var (or (amd-dep-to-var dep)
@@ -70,8 +72,39 @@ dependencies in an AMD style Javascript module."
     (amd--write-header header)
     (message "Dependency %s available as %s" (amd-dep-format dep) final-var)))
     
-(defun amd-goto ()
+(defun amd-add-pkg-dir ()
+  "Add a package from a directory"
+  (interactive)
+  (let ((directory (ido-read-directory-name
+                    "Select package directory: ")))
+    (when (if (not (file-exists-p directory))
+              (when (y-or-n-p "Directory doesn't exist, create?")
+                (make-directory directory t)
+                t)
+            t)
+      (let ((name (amd-package-read-json directory)))
+        (when (not name)
+          (setq name (read-string "No package name found, specify: "
+                                  (or (amd-package-name directory)
+                                      (amd-package-guess-name directory))))
+          (when (y-or-n-p "No package.json found, create? ")
+            (amd-package-write-json directory name)))
+        (amd-package-add name directory)))))
+
+(defun amd-goto-dep ()
   "Open one of the dependencies"
-  (interactive))
+  (interactive)
+  (let ((header (amd--find-header)))
+    (if header
+        (let* ((depstrs (amd--header-ids header))
+               (depstr (ido-completing-read "Open dependency: " depstrs))
+               (dep (amd-dep-parse depstr)))
+           (if dep
+               (let ((file (amd-dep-to-file dep)))
+                 (if file
+                     (find-file-other-window file)
+                   (message "No file found for dependecy %s." depstr)))
+             (message "Failed to parse dependency %s." depstr)))
+      (message "No AMD header found."))))
 
 (provide 'amd-mode)

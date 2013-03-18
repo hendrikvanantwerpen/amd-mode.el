@@ -9,7 +9,7 @@
          (parts (split-string resource "/" t)))
     (when start-slash
       (setq parts (cons "" parts)))
-    (when (or end-slash (= 1 (length parts)))
+    (when (or end-slash (and start-slash (= 1 (length parts))))
       (setcdr (last parts) (cons "" nil)))
     parts))
 
@@ -41,11 +41,13 @@
     (while (equal (car res-parts) (car ref-parts))
       (setq res-parts (cdr res-parts))
       (setq ref-parts (cdr ref-parts)))
-    (normalize (concat (resource-join (if (> (length ref-parts) 1)
-                                      (make-list (- (length ref-parts) 1)
-                                                 "../")
-                                    (list "./")))
-                       (resource-join res-parts)))))
+    (resource-normalize
+     (concat
+      (resource-join (if (> (length ref-parts) 1)
+                         (make-list (- (length ref-parts) 1)
+                                    "../")
+                       (list "./")))
+      (resource-join res-parts)))))
 
 (defun resource-absolute (resource reference)
   (if (resource-relative-p resource)

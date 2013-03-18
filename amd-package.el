@@ -21,8 +21,8 @@
     (if (or (not cur-pkg-res)
             (not (equal (car pkg-res) (car cur-pkg-res))))
         (cdr pkg-res)
-      (relativize (cdr pkg-res)
-                  (resource-directory (cdr cur-pkg-res))))))
+      (resource-relativize (cdr pkg-res)
+                           (resource-directory (cdr cur-pkg-res))))))
 
 (defun amd-package-and-resource-from-file (file)
   "For a given file, find the package and the resource"
@@ -45,12 +45,12 @@
 
 (defun amd-package-resource-to-file (resource &optional current-file)
   "for a given package path, return the file"
-  (let* ((current-resource (when current-file
-                             (amd-package-and-resource-from-file
-                              current-file)))
-         (absolute-resource
-          (amd-package-absolute-resource
-           resource (cdr current-resource)))
+  (let* ((cur-dir (expand-file-name (if current-file
+                                        (file-name-directory current-file)
+                                      default-directory)))
+         (current-resource (amd-package-and-resource-from-file cur-dir))
+         (absolute-resource (amd-package-absolute-resource
+                             resource (cdr current-resource)))
          (file nil))
     (when absolute-resource
       (mapcar (lambda (name)
@@ -68,26 +68,36 @@
   "Return all known package names in alphabetical order."
   (sort (hash-table-keys amd-package-table) 'string<))
 
+(defun amd-package-name (directory)
+  "Given a directory, return the package it represents or nil. Only matches when exactly the same."
+  (let ((directory (expand-file-name directory))))
+    (hash-table-find directory amd-package-table))
+
 (defun amd-package-directory (name)
   "Given a package name, return an absolute path or nil."
   (let ((directory (gethash name amd-package-table)))
     (if directory
         (file-name-as-directory (expand-file-name directory)))))
 
-(setq amd-package-name-re "\"name\":[[:space:]\n]*\"\\([^\"]+\\)\"")
-
 (defun amd-package-find-and-add (file)
   "Find package for file and add to package table."
-  (let* ((result (amd-package-find file))
-         (name (car result))
-         (directory (cdr result))
+  (let ((result (amd-package-find file)))
+    (when result
+      (amd-package-add (car result) (cdr result)))))
+
+(defun amd-package-add (name directory)
+  (let* ((current-name (amd-package-name directory))
          (current-directory (amd-package-directory name)))
-    (if (and (and result current-directory)
-             (not (equal directory current-directory)))
-        (message "Previous package %s at %s found at new location %s."
-                 name current-directory directory)
+    (if (or (and current-name
+                 (not (equal current-name name)))
+            (and current-directory
+                 (not (equal current-directory
+                             (expand-file-name directory)))))
+        (message "Package %s at %s conflicts with found %s at %s."
+                 current-name current-directory
+                 name directory)
       (puthash name directory amd-package-table)
-      result)))
+      (cons name directory))))
 
 (defun amd-package-find (file)
   (let ((reverse-parts
@@ -99,15 +109,10 @@
                             (concat (resource-join
                                      (reverse reverse-parts))
                                     "/")))
-               (search-file (concat search-dir "package.json")))
-          (if (not (file-exists-p search-file))
+               (name (amd-package-read-json search-dir)))
+          (if (not name)
               (setq reverse-parts (cdr reverse-parts))
-            (let ((name (car reverse-parts)))
-              (with-current-buffer (find-file-noselect search-file)
-                (if (search-forward-regexp amd-package-name-re nil t)
-                    (setq name (match-string 1)))
-                (kill-buffer))
-              (throw 'found (cons name search-dir)))))))))
+            (throw 'found (cons name search-dir))))))))
 
 (defun amd-package-absolute-resource (resource reference)
   (let ((absolute-resource resource))
@@ -118,5 +123,31 @@
       (message "Resource %s still relative, outside package?"
                absolute-resource)
       nil)))
+
+(setq amd-package-name-re "\"name\":[[:space:]\n]*\"\\([^\"]+\\)\"")
+
+(defun amd-package-read-json (directory)
+  "Detect package.json, read name or guess from folder or return nil."
+  (let ((package-file (concat (expand-file-name directory) "package.json"))
+        (name nil))
+    (when (file-exists-p package-file)
+      (let ((name (amd-package-guess-name directory)))
+        (with-current-buffer (find-file-noselect package-file)
+          (when (search-forward-regexp amd-package-name-re nil t)
+              (setq name (match-string 1)))
+          (kill-buffer))
+        name))))
+
+(defun amd-package-write-json (directory name)
+  "Detect package.json, read name or guess from folder or return nil."
+  (let ((package-file (concat (expand-file-name directory) "package.json")))
+    (if (file-exists-p package-file)
+        (message "Found existing package.json, not overwriting.")
+      (with-current-buffer (find-file-noselect package-file)
+        (insert (format "{\n    \"name\": \"%s\"\n}" name))
+        (save-buffer)))))
+
+(defun amd-package-guess-name (directory)
+  (file-name-nondirectory (directory-file-name directory)))
 
 (provide 'amd-package)

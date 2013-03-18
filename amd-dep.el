@@ -1,4 +1,5 @@
 (require 'amd-util)
+(require 'amd-package)
 
 ; The interface
 
@@ -40,7 +41,10 @@
         (funcall handler (amd-dep-resource dep)))))
 
 (defun amd-dep-to-file (dep)
-  "For the given dependency, return a file")
+  "For the given dependency, return a file"
+  (let ((handler (gethash (amd-dep-plugin dep) amd-dep-to-file-handlers)))
+    (if handler
+        (funcall handler (amd-dep-resource dep)))))
 
 ; Dependency
 
@@ -63,44 +67,74 @@
 (defun amd-dep-resource (dep)
   (cdr dep))
 
-; Handling of MAD modules
+; Handling of AMD modules
+
+(setq amd-dep-module-id-re
+      "^\\(?:[[:alnum:]-_\.]+/\\)*\\([[:alnum:]-_]+\\)$")
 
 (defun amd-dep-module-create (resource)
   (if (string-match amd-dep-module-id-re resource)
-      (normalize resource)))
+      (resource-normalize resource)))
 
 (defun amd-dep-module-from-file (file)
-  (let ((fullfile (expand-file-name file)))
-    (if (string-match "^.*\\.js$" file)
-        (amd-dep-create nil (file-name-sans-extension file)))))
+  (let ((resource (amd-package-resource-from-file file)))
+    (if (and resource
+             (string-match "^\\(.*\\)\\.js$" resource))
+        (let ((module (match-string 1 resource)))
+          (amd-dep-create nil module)))))
+
+(defun amd-dep-module-to-file (module)
+  (let ((resource (concat module ".js")))
+    (amd-package-resource-to-file resource)))
 
 (defun amd-dep-module-to-var (resource)
   (if (string-match amd-dep-module-id-re resource)
       (let ((name (match-string 1 resource)))
         (camelize name))))
 
-(puthash nil (lambda (resource) (amd-dep-module-create resource)) amd-dep-create-handlers)
-(puthash nil (lambda (resource) (amd-dep-module-to-var resource)) amd-dep-to-var-handlers)
-(add-to-list 'amd-dep-from-file-handlers (lambda (file) (amd-dep-module-from-file file)))
+(progn
+  (puthash nil (lambda (resource)
+                 (amd-dep-module-create resource))
+           amd-dep-create-handlers)
+  (puthash nil (lambda (resource)
+                 (amd-dep-module-to-var resource))
+           amd-dep-to-var-handlers)
+  (puthash nil (lambda (resource)
+                 (amd-dep-module-to-file resource))
+           amd-dep-to-file-handlers)
+  (add-to-list 'amd-dep-from-file-handlers
+               (lambda (file) (amd-dep-module-from-file file))))
 
 ; Handling for the text plugin
 
-(setq amd-dep-module-id-re
-      "^\\(?:[[:alnum:]-_\.]+/\\)*\\([[:alnum:]-_]+\\)$")
-
 (defun amd-dep-text-plugin-create (resource)
-  (expand-file-name resource))
+  (resource-normalize resource))
 
 (defun amd-dep-text-plugin-from-file (file)
-  (let ((fullfile (expand-file-name file)))
-    (amd-dep-create "text" fullfile)))
+  (let ((resource (amd-package-resource-from-file file)))
+    (when resource
+      (amd-dep-create "text" resource))))
+
+(defun amd-dep-text-plugin-to-file (resource)
+  (message "Here!")
+  (amd-package-resource-to-file resource))
 
 (defun amd-dep-text-plugin-to-var (resource)
-  (camelize (concat (file-name-sans-extension (file-name-nondirectory resource))
+  (camelize (concat (file-name-sans-extension
+                     (file-name-nondirectory resource))
                     "-" (file-name-extension resource))))
 
-(puthash "text" (lambda (resource) (amd-dep-text-plugin-create resource)) amd-dep-create-handlers)
-(puthash "text" (lambda (resource) (amd-dep-text-plugin-to-var resource)) amd-dep-to-var-handlers)
-(add-to-list 'amd-dep-from-file-handlers (lambda (file) (amd-dep-text-plugin-from-file file)))
+(progn
+  (puthash "text" (lambda (resource)
+                    (amd-dep-text-plugin-create resource))
+           amd-dep-create-handlers)
+  (puthash "text" (lambda (resource)
+                    (amd-dep-text-plugin-to-var resource))
+           amd-dep-to-var-handlers)
+  (puthash "text" (lambda (resource)
+                    (amd-dep-text-plugin-to-file resource))
+           amd-dep-to-file-handlers)
+  (add-to-list 'amd-dep-from-file-handlers
+               (lambda (file) (amd-dep-text-plugin-from-file file))))
 
 (provide 'amd-dep)
