@@ -116,7 +116,6 @@
       (amd-dep-create "text" resource))))
 
 (defun amd-dep-text-plugin-to-file (resource)
-  (message "Here!")
   (amd-package-resource-to-file resource))
 
 (defun amd-dep-text-plugin-to-var (resource)
