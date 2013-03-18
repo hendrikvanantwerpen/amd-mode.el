@@ -10,9 +10,10 @@ Features:
  * Function amd-add-file asks to create the file if it doesn't exist yet.
 
 TODO:
- * When we encouter a package we already know about but in a different location, warn & fail.
  * Is there a chance we have nested packages?
  * Use relative path if include is from same package as us.
+ * The package table should be buffer local (can differ per project, dir-vars etc).
+   System defaults should be possible though.
  
 Add dependency from file:
  * Prefix handling based on package.json info.

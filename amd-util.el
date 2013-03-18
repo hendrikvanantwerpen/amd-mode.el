@@ -1,24 +1,71 @@
-;;; Path
+;;; Resources
 
-(defun normalize (string)
-  "Normalize a path string, keeping only relative components at the beginning."
+(defun resource-split (resource)
+  "Return array with resource parts, empty only at begin or end."
+  (let* ((start-slash (and (> (length resource) 0)
+                           (equal "/" (substring resource 0 1))))
+         (end-slash (and (> (length resource) 0)
+                         (equal "/" (substring resource -1 nil))))
+         (parts (split-string resource "/" t)))
+    (when start-slash
+      (setq parts (cons "" parts)))
+    (when (or end-slash (= 1 (length parts)))
+      (setcdr (last parts) (cons "" nil)))
+    parts))
+
+(defun resource-join (parts)
+  (mapconcat 'identity parts "/"))
+
+(defun resource-normalize (resource)
+  "Normalize a path resource, keeping only relative components at the beginning."
   (let* ((result nil))
     (mapcar (lambda (part)
               (cond ((equal "." part)
                      (if (not result)
                          (setq result (cons part result))))
                     ((equal ".." part)
-                     (if (or (not result) (equal ".." (car result)))
+                     (if (or (not result)
+                             (equal ".." (car result))
+                             (equal "" (car result)))
                          (setq result (cons part result))
                        (if (equal "." (car result))
                            (setq result (cons part (cdr result)))
                          (setq result (cdr result)))))
                     (t (setq result (cons part result)))))
-            (split-string string "/" t))
-    (mapconcat 'identity (reverse result) "/")))
+            (resource-split resource))
+    (resource-join (reverse result))))
 
-(defun relative-p (string)
+(defun resource-relativize (resource reference)
+  (let ((res-parts (resource-split resource))
+        (ref-parts (resource-split (resource-directory reference))))
+    (while (equal (car res-parts) (car ref-parts))
+      (setq res-parts (cdr res-parts))
+      (setq ref-parts (cdr ref-parts)))
+    (normalize (concat (resource-join (if (> (length ref-parts) 1)
+                                      (make-list (- (length ref-parts) 1)
+                                                 "../")
+                                    (list "./")))
+                       (resource-join res-parts)))))
+
+(defun resource-absolute (resource reference)
+  (if (resource-relative-p resource)
+      (resource-normalize (concat (resource-directory reference)
+                                  resource))
+    resource))
+
+(defun resource-relative-p (string)
   (string-match "^\\.\\.?/" string))
+
+(defun resource-directory (resource)
+  (let ((parts (resource-split resource)))
+    (setcar (last parts) "")
+    (resource-join parts)))
+
+;;; Files
+
+(defun file-name-absolute filename directory
+  (if (string-match "^\\." path)
+      (expand-file-name (concat (file-name-directory current-path) "/" path))))
 
 ;;; List
 
@@ -71,5 +118,10 @@
             (mapconcat 'identity
                        (mapcar (lambda (part) (upcase-initials part))
                                (cdr parts)) ""))))
+
+(defun string-sans-prefix (prefix string)
+  (let ((regexp (concat "^" (regexp-quote prefix) "\\(.*\\)$")))
+    (if (string-match regexp string)
+        (match-string 1 string))))
 
 (provide 'amd-util)

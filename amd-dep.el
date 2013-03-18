@@ -2,35 +2,32 @@
 
 ; The interface
 
-(setq amd-dep-norm-handlers (make-hash-table :test 'equal))
+(setq amd-dep-create-handlers (make-hash-table :test 'equal))
 (setq amd-dep-to-var-handlers (make-hash-table :test 'equal))
 (setq amd-dep-to-file-handlers (make-hash-table :test 'equal))
 (setq amd-dep-from-file-handlers nil)
-
-(setq amd-dep-module-id-re
-      "^\\(?:[[:alnum:]-_\.]+/\\)*\\([[:alnum:]-_]+\\)$")
 
 (setq amd-dep-re
       "^\\(?:\\(\\(?:[[:alnum:]-_\.]+/\\)*[[:alnum:]-_]+\\)!\\)?\\([^!]+\\)$")
 
 (defun amd-dep-create (plugin resource)
   (let ((dep (cons plugin resource)))
-    (let* ((plugin-handler (gethash nil amd-dep-norm-handlers))
-           (resource-handler (gethash plugin amd-dep-norm-handlers))
-           (norm-plugin (if (and plugin plugin-handler)
-                            (funcall plugin-handler plugin)
+    (let* ((module-create (gethash nil amd-dep-create-handlers))
+           (plugin-create (gethash plugin amd-dep-create-handlers))
+           (final-plugin (if (and plugin module-create)
+                            (funcall module-create plugin)
                           plugin))
-           (norm-resource (if resource-handler
-                              (funcall resource-handler resource)
+           (final-resource (if plugin-create
+                              (funcall plugin-create resource)
                             resource)))
-      (if norm-resource
-          (cons norm-plugin norm-resource)))))
+      (if final-resource
+          (cons final-plugin final-resource)))))
 
 (defun amd-deps-from-file (file)
   "For the given file, return possible AMD dependencies"
   (let ((deps nil))
-    (mapcar (lambda (handler)
-              (let ((dep (funcall handler file)))
+    (mapcar (lambda (plugin-from-file)
+              (let ((dep (funcall plugin-from-file file)))
                 (if dep
                     (setq deps (cons dep deps)))))
             amd-dep-from-file-handlers)
@@ -66,9 +63,9 @@
 (defun amd-dep-resource (dep)
   (cdr dep))
 
-; The standard js functions
+; Handling of MAD modules
 
-(defun amd-dep-module-norm (resource)
+(defun amd-dep-module-create (resource)
   (if (string-match amd-dep-module-id-re resource)
       (normalize resource)))
 
@@ -82,13 +79,16 @@
       (let ((name (match-string 1 resource)))
         (camelize name))))
 
-(puthash nil (lambda (resource) (amd-dep-module-norm resource)) amd-dep-norm-handlers)
+(puthash nil (lambda (resource) (amd-dep-module-create resource)) amd-dep-create-handlers)
 (puthash nil (lambda (resource) (amd-dep-module-to-var resource)) amd-dep-to-var-handlers)
 (add-to-list 'amd-dep-from-file-handlers (lambda (file) (amd-dep-module-from-file file)))
 
-; text plugin
+; Handling for the text plugin
 
-(defun amd-dep-text-plugin-norm (resource)
+(setq amd-dep-module-id-re
+      "^\\(?:[[:alnum:]-_\.]+/\\)*\\([[:alnum:]-_]+\\)$")
+
+(defun amd-dep-text-plugin-create (resource)
   (expand-file-name resource))
 
 (defun amd-dep-text-plugin-from-file (file)
@@ -99,7 +99,7 @@
   (camelize (concat (file-name-sans-extension (file-name-nondirectory resource))
                     "-" (file-name-extension resource))))
 
-(puthash "text" (lambda (resource) (amd-dep-text-plugin-norm resource)) amd-dep-norm-handlers)
+(puthash "text" (lambda (resource) (amd-dep-text-plugin-create resource)) amd-dep-create-handlers)
 (puthash "text" (lambda (resource) (amd-dep-text-plugin-to-var resource)) amd-dep-to-var-handlers)
 (add-to-list 'amd-dep-from-file-handlers (lambda (file) (amd-dep-text-plugin-from-file file)))
 
