@@ -1,6 +1,6 @@
-(require 'ido)
-
 ;;; Requires
+
+(require 'ido)
 
 (require 'amd-header)
 (require 'amd-dep)
@@ -20,8 +20,8 @@ dependencies in an AMD style Javascript module."
   "Make current buffer into an AMD module."
   (interactive)
   (save-excursion
-    (if (not (amd--find-header))
-        (amd--write-empty-header)
+    (if (not (amd-find-header))
+        (amd-write-empty-header)
       (message "AMD header already exists."))))
 
 (defun amd-add-dep ()
@@ -67,9 +67,9 @@ dependencies in an AMD style Javascript module."
 (defun amd-write-dep-to-header (dep)
   (let* ((var (or (amd-dep-to-var dep)
                   (read-string "No auto-name, specify variable name: ")))
-         (header (amd--find-or-create-header))
-         (final-var (amd--header-add (amd-dep-format dep) var header)))
-    (amd--write-header header)
+         (header (amd-find-or-create-header))
+         (final-var (amd-header-add (amd-dep-format dep) var header)))
+    (amd-write-header header)
     (message "Dependency %s available as %s" (amd-dep-format dep) final-var)))
     
 (defun amd-add-pkg-dir ()
@@ -94,9 +94,9 @@ dependencies in an AMD style Javascript module."
 (defun amd-goto-dep ()
   "Open one of the dependencies"
   (interactive)
-  (let ((header (amd--find-header)))
+  (let ((header (amd-find-header)))
     (if header
-        (let* ((depstrs (amd--header-ids header))
+        (let* ((depstrs (amd-header-ids header))
                (depstr (ido-completing-read "Open dependency: " depstrs))
                (dep (amd-dep-parse depstr)))
            (if dep
