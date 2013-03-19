@@ -20,7 +20,7 @@ Features
  * Searches for package when adding a file and adds it automatically. For later it is advised to put them in init.el or directory variables.
  * Dependencies are put relative if they are in the same package.
 
-wISH list
+Wish list
 ---------
 
  * Have a quick way to jump to a known package's root folder when selecting a file.
