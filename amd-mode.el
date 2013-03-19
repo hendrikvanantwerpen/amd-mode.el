@@ -9,12 +9,19 @@
 
 ;;; Commands
 
+(defvar amd-key-map (make-sparse-keymap))
+(define-key amd-key-map (kbd "C-c a i") 'amd-init)
+(define-key amd-key-map (kbd "C-c a d") 'amd-add-dep)
+(define-key amd-key-map (kbd "C-c a f") 'amd-add-file)
+(define-key amd-key-map (kbd "C-c a p") 'amd-add-pkg)
+(define-key amd-key-map (kbd "C-c a g") 'amd-goto)
+
 (define-minor-mode amd-mode "AMD mode
 
 This mode is intended to provide easier management of
 dependencies in an AMD style Javascript module."
 
-  nil " AMD" nil)
+  nil " AMD" amd-key-map)
 
 (defun amd-init ()
   "Make current buffer into an AMD module."
@@ -72,7 +79,7 @@ dependencies in an AMD style Javascript module."
     (amd-write-header header)
     (message "Dependency %s available as %s" (amd-dep-format dep) final-var)))
     
-(defun amd-add-pkg-dir ()
+(defun amd-add-pkg ()
   "Add a package from a directory"
   (interactive)
   (let ((directory (ido-read-directory-name
@@ -91,7 +98,7 @@ dependencies in an AMD style Javascript module."
             (amd-package-write-json directory name)))
         (amd-package-add name directory)))))
 
-(defun amd-goto-dep ()
+(defun amd-goto ()
   "Open one of the dependencies"
   (interactive)
   (let ((header (amd-find-header)))

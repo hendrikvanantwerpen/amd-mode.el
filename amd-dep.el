@@ -8,8 +8,8 @@
 (setq amd-dep-to-file-handlers (make-hash-table :test 'equal))
 (setq amd-dep-from-file-handlers nil)
 
-(setq amd-dep-re
-      "^\\(?:\\(\\(?:[[:alnum:]-_\.]+/\\)*[[:alnum:]-_]+\\)!\\)?\\([^!]+\\)$")
+(defvar amd-dep-re
+  "^\\(?:\\(\\(?:[[:alnum:]-_\.]+/\\)*[[:alnum:]-_]+\\)!\\)?\\([^!]+\\)$")
 
 (defun amd-dep-create (plugin resource)
   (let ((dep (cons plugin resource)))
@@ -67,6 +67,12 @@
 (defun amd-dep-resource (dep)
   (cdr dep))
 
+(defun amd-dep-plugin-add (plugin &optional create to-var from-file to-file)
+  (when create (puthash plugin create amd-dep-create-handlers))
+  (when to-var (puthash plugin to-var amd-dep-to-var-handlers))
+  (when to-file (puthash plugin from-file amd-dep-to-file-handlers))
+  (when (add-to-list 'amd-dep-from-file-handlers from-file)))
+
 ; Handling of AMD modules
 
 (setq amd-dep-module-id-re
@@ -92,18 +98,11 @@
       (let ((name (match-string 1 resource)))
         (camelize name))))
 
-(progn
-  (puthash nil (lambda (resource)
-                 (amd-dep-module-create resource))
-           amd-dep-create-handlers)
-  (puthash nil (lambda (resource)
-                 (amd-dep-module-to-var resource))
-           amd-dep-to-var-handlers)
-  (puthash nil (lambda (resource)
-                 (amd-dep-module-to-file resource))
-           amd-dep-to-file-handlers)
-  (add-to-list 'amd-dep-from-file-handlers
-               (lambda (file) (amd-dep-module-from-file file))))
+(amd-dep-plugin-add nil
+  (lambda (resource) (amd-dep-module-create resource))
+  (lambda (resource) (amd-dep-module-to-var resource))
+  (lambda (file) (amd-dep-module-from-file file))
+  (lambda (resource) (amd-dep-module-to-file resource)))
 
 ; Handling for the text plugin
 
@@ -123,17 +122,10 @@
                      (file-name-nondirectory resource))
                     "-" (file-name-extension resource))))
 
-(progn
-  (puthash "text" (lambda (resource)
-                    (amd-dep-text-plugin-create resource))
-           amd-dep-create-handlers)
-  (puthash "text" (lambda (resource)
-                    (amd-dep-text-plugin-to-var resource))
-           amd-dep-to-var-handlers)
-  (puthash "text" (lambda (resource)
-                    (amd-dep-text-plugin-to-file resource))
-           amd-dep-to-file-handlers)
-  (add-to-list 'amd-dep-from-file-handlers
-               (lambda (file) (amd-dep-text-plugin-from-file file))))
+(amd-dep-plugin-add "text"
+  (lambda (resource) (amd-dep-text-plugin-create resource))
+  (lambda (resource) (amd-dep-text-plugin-to-var resource))
+  (lambda (file) (amd-dep-text-plugin-from-file file))
+  (lambda (resource) (amd-dep-text-plugin-to-file resource)))
 
 (provide 'amd-dep)

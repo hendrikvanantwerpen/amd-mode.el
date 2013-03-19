@@ -3,18 +3,18 @@
 
 ;;; Reading and writing the header
 
-(setq amd-header-re
-      (let* ((g< "\\(?:")
-            (>g "\\)")
-            (string (concat g< "\"[^\"]*\"\\|'[^']*'" >g))
-            (identifier "[_$[:alnum:]]+")
-            (ws* "[\n[:space:]]*")
-            (strings? (concat g< string
-                              g< ws* "," ws* string >g "*" >g "?"))
-            (identifiers? (concat g< identifier
-                                  g< ws* "," ws* identifier >g "*" >g "?")))
-        (concat "^define" ws* "(" ws* "\\(\\[" ws* strings? ws* "\\]\\)" ws* ","
-                ws* "function" ws* "\\((" ws* identifiers? ws* ")\\)" ws* "{")))
+(defvar amd-header-re
+  (let* ((g< "\\(?:")
+         (>g "\\)")
+         (string (concat g< "\"[^\"]*\"\\|'[^']*'" >g))
+         (identifier "[_$[:alnum:]]+")
+         (ws* "[\n[:space:]]*")
+         (strings? (concat g< string
+                           g< ws* "," ws* string >g "*" >g "?"))
+         (identifiers? (concat g< identifier
+                               g< ws* "," ws* identifier >g "*" >g "?")))
+    (concat "^define" ws* "(" ws* "\\(\\[" ws* strings? ws* "\\]\\)" ws* ","
+            ws* "function" ws* "\\((" ws* identifiers? ws* ")\\)" ws* "{")))
 
 (defun amd-find-header ()
   "Find the AMD header and parse it"

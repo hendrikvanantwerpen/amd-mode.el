@@ -6,7 +6,7 @@
 
 (require 'amd-util)
 
-(setq amd-package-table (make-hash-table :test 'equal))
+(defvar amd-package-table (make-hash-table :test 'equal))
 (puthash "dojo" "~/gamelab/qed.svn/Dev/trunk/client/dojo" amd-package-table)
 (puthash "dijit" "~/gamelab/qed.svn/Dev/trunk/client/dijit/" amd-package-table)
 (puthash "dijit/dgrid" "~/dgrid/" amd-package-table)
@@ -124,7 +124,7 @@
                absolute-resource)
       nil)))
 
-(setq amd-package-name-re "\"name\":[[:space:]\n]*\"\\([^\"]+\\)\"")
+(defvar amd-package-name-re "\"name\":[[:space:]\n]*\"\\([^\"]+\\)\"")
 
 (defun amd-package-read-json (directory)
   "Detect package.json, read name or guess from folder or return nil."

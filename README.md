@@ -4,11 +4,11 @@ amd-mode
 Plugin provides a minor mode for handling JavaScript AMD module and plugin dependencies. It uses the package.json convention to recognize packages, deduce relative urls and convert dependencies to file paths. It provides the following functions:
 
     amd-mode     ; enable AMD mode with key bindings
-    amd-init     ; add AMD header to current file if not already present
-    amd-add-dep  ; add a dependency, specified manually
-    amd-add-file ; add dependency by selecting a file
-    amd-add-pkg  ; register AMD package
-    amd-goto-dep ; quickly select a dependency to open
+    amd-init     ; [C-c a i] add AMD header to current file if not already present
+    amd-add-dep  ; [C-c a d] add a dependency, specified manually
+    amd-add-file ; [C-c a f] add dependency by selecting a file
+    amd-add-pkg  ; [C-c a p] register AMD package
+    amd-goto     ; [C-c a g] quickly select a dependency to open
 
 Features
 --------
@@ -24,7 +24,7 @@ Wish list
 ---------
 
  * Have a quick way to jump to a known package's root folder when selecting a file.
- * Handle global and local package definitions in a smart way.
+ * Handle global and local package definitions in a smart way. The problem is that package definitions are not just global or buffer local. They actually correspond to dependencies and are maybe best defined on a package level. We could keep them in a hash/alist by package(directory). We could even check/update the package file if we start using a new dependency, although parsing JSON might be required to do this reliably.
 
 See also
 --------
