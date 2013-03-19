@@ -1,16 +1,33 @@
 amd-mode
 ========
 
-AMD minor mode for Emacs to easily work with AMD dependencies. Some ideas were kindly stolen from requirejs-mode.
+Plugin provides a minor mode for handling JavaScript AMD module and plugin dependencies. It uses the package.json convention to recognize packages, deduce relative urls and convert dependencies to file paths. It provides the following functions:
 
-Features:
- * Function amd-init makes current buffer into AMD module, unless it already is.
- * AMD dependencies are sorted alphabetically, not insertion order, for easier searching. When a module is added twice, we just print the existing variable for it. Variables are unique in the argument list (but they may be used elsewehere in the code. Module IDs are normalized.
- * Function amd-add-id allows you to add a dependency by specifying a module id.
- * Function amd-add-file asks to create the file if it doesn't exist yet.
- * Resource are created relative when appropriate.
- * Will ask to create package.json or dependency when non-existent.
+    amd-mode     ; enable AMD mode with key bindings
+    amd-init     ; add AMD header to current file if not already present
+    amd-add-dep  ; add a dependency, specified manually
+    amd-add-file ; add dependency by selecting a file
+    amd-add-pkg  ; register AMD package
+    amd-goto-dep ; quickly select a dependency to open
 
-TODO:
- * Have buffer/directory local different package tables. Maybe together with global ones.
- * Easy way of jumping to known package folders in the file selector.
+Features
+--------
+
+ * Initialize file as AMD module when header doesn't exist yet. Automatically done when adding the first dependency.
+ * Resilient to adding the same dependency or package twice by using normalized paths and resources.
+ * Generates variable names for dependencies automatically and prevents duplicates.
+ * When dependency file doesn't exist, give the option to create it.
+ * Searches for package when adding a file and adds it automatically. For later it is advised to put them in init.el or directory variables.
+ * Dependencies are put relative if they are in the same package.
+
+wISH list
+---------
+
+ * Have a quick way to jump to a known package's root folder when selecting a file.
+ * Handle global and local package definitions in a smart way.
+
+See also
+--------
+
+ * The requirejs-mode which served as inspiration at https://github.com/purcell/requirejs-mode.
+ * AMD documentation at http://requirejs.org.
