@@ -82,10 +82,10 @@ dependencies in an AMD style Javascript module."
              (dep (amd-dep-parse depstr)))
         (if (not dep)
             (message "Failed to parse dependency %s." depstr)
-          (let ((files (amd-dep-to-files dep))
-                (count (length files)))
+          (let* ((files (amd-dep-to-files dep))
+                 (count (length files)))
             (cond ((= count 0)
-                   (message "No file found for dependecy %s." depstr))
+                   (message "No file found for dependency %s." depstr))
                   ((= count 1)
                    (find-file-other-window (nth 0 files)))
                   (t

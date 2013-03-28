@@ -143,6 +143,30 @@
   (lambda (file) (amd-dep--text-plugin-from-file file))
   (lambda (resource) (amd-dep--text-plugin-to-files resource)))
 
+; Handling for the dojo/text plugin
+
+(defun amd-dep--dojo-text-plugin-create (resource)
+  (js-pkg-res-id-normalize resource))
+
+(defun amd-dep--dojo-text-plugin-from-file (file)
+  (let ((resource (js-pkg-file-to-res file)))
+    (when resource
+      (amd-dep-create "dojo/text" resource))))
+
+(defun amd-dep--dojo-text-plugin-to-files (resource)
+  (js-pkg-res-to-files resource))
+
+(defun amd-dep--dojo-text-plugin-to-var (resource)
+  (amd-dep--camelize (concat (file-name-sans-extension
+                     (file-name-nondirectory resource))
+                    "-" (file-name-extension resource))))
+
+(amd-dep-register-plugin "dojo/text"
+  (lambda (resource) (amd-dep--dojo-text-plugin-create resource))
+  (lambda (resource) (amd-dep--dojo-text-plugin-to-var resource))
+  (lambda (file) (amd-dep--dojo-text-plugin-from-file file))
+  (lambda (resource) (amd-dep--dojo-text-plugin-to-files resource)))
+
 ; Util function
 
 (defun amd-dep--camelize (string)
