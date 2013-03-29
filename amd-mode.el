@@ -113,14 +113,14 @@ dependencies in an AMD style Javascript module."
              (js-pkg-info-create name version directory))))))))
 
 (defun amd--add-dep-to-header (dep)
-  (let* ((var (or (amd-dep-to-var dep)
-                  (read-string "No auto-name, specify variable name: ")))
+  (let* ((var (read-string "Specify variable name: "
+                           (amd-dep-to-var dep)))
+         (var-or-nil (when (not (s-blank? var)) var))
          (header (or (amd-header-read)
                      (amd-header-create)))
-         (final-var (amd-header-add dep var header)))
-    (when final-var
-      (amd-header-write header t)
-      (message "Dependency '%s' added as variable '%s'"
-               (amd-dep-format dep) final-var))))
+         (final-var (amd-header-add dep var-or-nil header)))
+    (amd-header-write header t)
+    (message "Dependency '%s' added as variable '%s'"
+             (amd-dep-format dep) final-var)))
     
 (provide 'amd-mode)
