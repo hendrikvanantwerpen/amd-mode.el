@@ -91,7 +91,7 @@
 ; Handling of AMD modules
 
 (setq amd-dep--module-id-re
-      "^\\(?:[[:alnum:]-_\.]+/\\)*\\([[:alnum:]-_]+\\)$")
+      "^\\(?:[[:alnum:]-_\.]+/\\)*\\([[:alnum:]-_\.]+\\)$")
 
 (defun amd-dep--module-create (resource)
   (if (string-match amd-dep--module-id-re resource)

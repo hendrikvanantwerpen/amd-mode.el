@@ -185,7 +185,7 @@ This keeps everything in sorted order because anonymous dependencies have to com
 
 (defun amd-header--safe-var (var)
   "Return the string with unsafe characters removed."
-  (s-replace "[^[:alnum:]_$]+" "" var))
+  (s-lower-camel-case (replace-regexp-in-string "[^[:alnum:]_$]+" " " var)))
 
 (defun amd-header--unique-var (string strings)
   "Make string unique so that it does not exists in strings by appending a counter."
