@@ -111,7 +111,7 @@
 (defun amd-dep--module-to-var (resource)
   (if (string-match amd-dep--module-id-re resource)
       (let ((name (match-string 1 resource)))
-        (amd-dep--camelize name))))
+        (s-lower-camel-case name))))
 
 (amd-dep-register-plugin nil
   (lambda (resource) (amd-dep--module-create resource))
@@ -133,9 +133,10 @@
   (js-pkg-res-to-files resource))
 
 (defun amd-dep--text-plugin-to-var (resource)
-  (amd-dep--camelize (concat (file-name-sans-extension
-                     (file-name-nondirectory resource))
-                    "-" (file-name-extension resource))))
+  (s-lower-camel-case
+   (concat (file-name-sans-extension
+            (file-name-nondirectory resource))
+           "-" (file-name-extension resource))))
 
 (amd-dep-register-plugin "text"
   (lambda (resource) (amd-dep--text-plugin-create resource))
@@ -157,9 +158,10 @@
   (js-pkg-res-to-files resource))
 
 (defun amd-dep--dojo-text-plugin-to-var (resource)
-  (amd-dep--camelize (concat (file-name-sans-extension
-                     (file-name-nondirectory resource))
-                    "-" (file-name-extension resource))))
+  (s-lower-camel-case
+   (concat (file-name-sans-extension
+            (file-name-nondirectory resource))
+           "-" (file-name-extension resource))))
 
 (amd-dep-register-plugin "dojo/text"
   (lambda (resource) (amd-dep--dojo-text-plugin-create resource))
@@ -168,13 +170,6 @@
   (lambda (resource) (amd-dep--dojo-text-plugin-to-files resource)))
 
 ; Util function
-
-(defun amd-dep--camelize (string)
-  (let ((parts (split-string string "-")))
-    (concat (car parts)
-            (mapconcat 'identity
-                       (mapcar (lambda (part) (upcase-initials part))
-                               (cdr parts)) ""))))
 
 (defun amd-dep--assoc (key list)
   (cdr (assoc key list)))
