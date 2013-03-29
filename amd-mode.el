@@ -77,8 +77,12 @@ dependencies in an AMD style Javascript module."
         (message "No AMD header found.")
       (let* ((deps (amd-header-deps header))
              (depstrs (-map 'amd-dep-format deps))
+             (dep-at-point (amd--dep-at-point header))
+             (suggested (when (member dep-at-point depstrs)
+                          dep-at-point))
              (depstr (ido-completing-read
-                      "Open dependency: " depstrs))
+                      "Open dependency: " depstrs
+                      nil t suggested))
              (dep (amd-dep-parse depstr)))
         (if (not dep)
             (message "Failed to parse dependency %s." depstr)
@@ -111,6 +115,17 @@ dependencies in an AMD style Javascript module."
           (when (and name version)
             (js-pkg-info-write
              (js-pkg-info-create name version directory))))))))
+
+(defun amd--dep-at-point (header)
+  "Return a dep string for the current point."
+  (when (equal major-mode 'js2-mode)
+    (let ((node (js2-node-at-point)))
+      (when node
+        (cond ((equal (js2-node-short-name node) "js2-name-node")
+               (let ((dep (amd-header-dep-by-var (js2-node-string node) header)))
+                 (when dep (amd-dep-format dep))))
+              ((equal (js2-node-short-name node) "js2-string-node")
+               (substring (js2-node-string node) 1 -1)))))))
 
 (defun amd--add-dep-to-header (dep)
   (let* ((var (read-string "Specify variable name: "

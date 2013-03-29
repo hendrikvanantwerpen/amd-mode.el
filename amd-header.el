@@ -30,14 +30,15 @@
   (let ((match (amd-header--match)))
     (when (or match
               add-if-new)
-      (if match
-          (delete-region (car (nth 0 match))
-                         (cdr (nth 0 match)))
-        ; how can we indent the existing code?
-        (goto-char (point-max))
-        (insert "\n});\n")
-        (goto-char (point-min)))
-      (insert (amd-header--format header)))))
+      (save-excursion
+        (if match
+            (delete-region (car (nth 0 match))
+                           (cdr (nth 0 match)))
+          ; how can we indent the existing code?
+          (goto-char (point-max))
+          (insert "\n});\n")
+          (goto-char (point-min)))
+        (insert (amd-header--format header))))))
 
 (defun amd-header-create (&optional deps vars)
   "Create a new header with the given dependencies and variable names (expected in corresponding order)."
@@ -142,15 +143,16 @@ This keeps everything in sorted order because anonymous dependencies have to com
 
 (defun amd-header--match ()
   "Find the AMD header and parse it. Returns '((start end) deps vars)."
-  (goto-char (point-min))
-  (when (search-forward-regexp amd-header--re nil t)
-    (let ((start (match-beginning 0))
-          (end (match-end 0))
-          (raw-deps (match-string 1))
-          (raw-vars (match-string 2)))
-      (let ((deps (amd-header--parse-deps raw-deps))
-            (vars (amd-header--parse-vars raw-vars)))
-        (list (cons start end) deps vars)))))
+  (save-excursion
+    (goto-char (point-min))
+    (when (search-forward-regexp amd-header--re nil t)
+      (let ((start (match-beginning 0))
+            (end (match-end 0))
+            (raw-deps (match-string 1))
+            (raw-vars (match-string 2)))
+        (let ((deps (amd-header--parse-deps raw-deps))
+              (vars (amd-header--parse-vars raw-vars)))
+          (list (cons start end) deps vars))))))
 
 (defun amd-header--parse-deps (string)
   "Splits string and parses them to a list of deps."
