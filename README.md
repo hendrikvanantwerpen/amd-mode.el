@@ -51,9 +51,9 @@ Auto-completion
 
 The auto-completion is based on 'auto-complete' can supports functions, object properties and constructors of included module dependencies. Completions have to be added to the appropriate alists (i.e. ac-amd-properties, ac-amd-functions, ac-amd-constructors). For example:
 
-    (setq ac-amd-properties '("module/someobj" . ("prop1", "func2(arg0, _opt_arg_)")))
-    (setq ac-amd-functions '("module/somefunc" . "(arg0, arg1)"))
-    (setq ac-amd-constructors '("module/Class" . "(arg0, arg1)"))
+    (add-to-list 'ac-amd-properties '("module/someobj" . ("prop1", "func2(arg0, _opt_arg_)")))
+    (add-to-list 'ac-amd-functions '("module/somefunc" . "(arg0, arg1)"))
+    (add-to-list 'ac-amd-constructors '("module/Class" . "(arg0, arg1)"))
 
 You can of course write these yourself, but for packages that support jsdoc or dojodoc there is a better way. First generate a documentation xml in dojov1 format using js-doc-parse (https://github.com/wkeese/js-doc-parse). The generate a lisp file from that using the provided XSL:
 
