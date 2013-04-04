@@ -108,7 +108,6 @@
 (defun ac-source-amd-constructor-start-pos ()
   (when (looking-back (concat "\\(new \\)" amd--js-id-cls "*") nil t)
     (let ((pos (match-end 1)))
-      (print pos)
       pos)))
 
 (defun ac-source-amd-constructor-candidates ()
