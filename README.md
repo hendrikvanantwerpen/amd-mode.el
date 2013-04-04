@@ -8,6 +8,8 @@ Provide a AMD/RequireJS minor mode and auto completion for Emacs. The minor mode
  * Integrates with packages on disk by using js-pkg.el. This allows for selecting dependencies on disk or navigating to a dependency.
  * Auto-completion of functions, properties and constructors by using js-doc-parse generated XML documentation.
 
+![Image](images/ac-amd-properties.png?raw=true)
+
 AMD/RequireJS
 -------------
 
@@ -67,19 +69,24 @@ A default configuration which enables auto-completion when amd-mode is active is
    (require 'ac-amd)
    (ac-amd-config-default)
 
+This is what it looks like:
+
+![Image](images/ac-amd-properties.png?raw=true)
+![Image](images/ac-amd-functions.png?raw=true)
+![Image](images/ac-amd-constructors.png?raw=true)
+
 Wish list & known issues
 ------------------------
 
+ * Be carefull that file resolution for resources only works for packages with a package.json which includes at least a name and version.
  * Updating the header sometimes results in some extra whitespace before the header.
- * Have a quick way to jump to a known package's root folder when selecting a file.
- * Handle global and local package definitions in a smart way. The problem is that package definitions are not just global or buffer local. They actually correspond to dependencies and are maybe best defined on a package level. We could keep them in a hash/alist by package(directory). We could even check/update the package file if we start using a new dependency, although parsing JSON might be required to do this reliably. Use the dependency versions maybe?
+ * Support for package dependencies would be nice. Currently we only use a global list. We could check if the current package actually depends on the package of the resource or otherwise suggest to add it. We could also use this to pick the best fit version for a file if multiple versions of a package create choice.
 
 See also
 --------
 
- * The requirejs-mode which served as inspiration at https://github.com/purcell/requirejs-mode.
+ * The requirejs-mode which served as inspiration to start this at https://github.com/purcell/requirejs-mode.
  * AMD documentation at http://requirejs.org.
-
 
 Install
 -------
