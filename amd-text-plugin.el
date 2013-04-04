@@ -44,11 +44,12 @@
             (file-name-nondirectory resource))
            "-" (file-name-extension resource))))
 
-(amd-dep-register-plugin "text"
-  (lambda (resource) (amd-dep--text-plugin-create resource))
-  (lambda (resource) (amd-dep--text-plugin-to-var resource))
-  (lambda (file) (amd-dep--text-plugin-from-file file))
-  (lambda (resource) (amd-dep--text-plugin-to-files resource)))
+(defun amd-text-plugin-setup ()
+  (amd-dep-register-plugin "text"
+    (lambda (resource) (amd-dep--text-plugin-create resource))
+    (lambda (resource) (amd-dep--text-plugin-to-var resource))
+    (lambda (file) (amd-dep--text-plugin-from-file file))
+    (lambda (resource) (amd-dep--text-plugin-to-files resource))))
 
 (provide 'amd-text-plugin)
 ;;; amd-text-plugin.el ends here

@@ -48,11 +48,12 @@
             (file-name-nondirectory resource))
            "-" (file-name-extension resource))))
 
-(amd-dep-register-plugin "dojo/text"
-  (lambda (resource) (amd-dep--dojo-text-plugin-create resource))
-  (lambda (resource) (amd-dep--dojo-text-plugin-to-var resource))
-  (lambda (file) (amd-dep--dojo-text-plugin-from-file file))
-  (lambda (resource) (amd-dep--dojo-text-plugin-to-files resource)))
+(defun amd-dojo-plugins-setup ()
+  (amd-dep-register-plugin "dojo/text"
+    (lambda (resource) (amd-dep--dojo-text-plugin-create resource))
+    (lambda (resource) (amd-dep--dojo-text-plugin-to-var resource))
+    (lambda (file) (amd-dep--dojo-text-plugin-from-file file))
+    (lambda (resource) (amd-dep--dojo-text-plugin-to-files resource))))
 
 (provide 'amd-dojo-plugins)
 ;;; amd-dojo-plugins.el ends here
