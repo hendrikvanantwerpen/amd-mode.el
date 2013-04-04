@@ -31,8 +31,8 @@ When selecting files as dependencies, the use of js-pkg.el makes sure that packa
 
 A default configuration which enables amd-mode when js2-mode is active is easily enabled with:
 
-   (require 'amd-mode)
-   (amd-mode-config-default)
+    (require 'amd-mode)
+    (amd-mode-config-default)
 
 By default only module dependencies are enabled. To enable the text plugin, do:
 
@@ -66,8 +66,8 @@ Then in Emacs add those completions as follows:
 
 A default configuration which enables auto-completion when amd-mode is active is easily enabled with:
 
-   (require 'ac-amd)
-   (ac-amd-config-default)
+    (require 'ac-amd)
+    (ac-amd-config-default)
 
 This is what it looks like:
 
@@ -95,12 +95,12 @@ Manually: put amd-*.el file in your load-path and (require 'amd-mode) and/or .
 
 El-get: Evaluate the following snippet and install 'amd-mode' with el-get-install.
 
-   (setq el-get-sources
-    (cons '(:name amd-mode
-            :type github
-            :pkgname "hendrikvanantwerpen/amd-mode.el"
-            :depends (js2-mode js-pkg semver auto-complete dash s))
-          el-get-sources))
+    (setq el-get-sources
+     (cons '(:name amd-mode
+             :type github
+             :pkgname "hendrikvanantwerpen/amd-mode.el"
+             :depends (js2-mode js-pkg semver auto-complete dash s))
+           el-get-sources))
 
 License
 -------
