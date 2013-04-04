@@ -27,6 +27,8 @@
 (require 'js-pkg)
 (require 's)
 
+(require 'amd-util)
+
 (setq amd-dep--create-handlers nil)
 (setq amd-dep--to-var-handlers nil)
 (setq amd-dep--to-files-handlers nil)
@@ -37,9 +39,9 @@
 
 (defun amd-dep-create (plugin resource)
   (let ((dep (cons plugin resource)))
-    (let* ((module-create (amd-dep--assoc
+    (let* ((module-create (amd--assoc
                            nil amd-dep--create-handlers))
-           (plugin-create (amd-dep--assoc
+           (plugin-create (amd--assoc
                            plugin amd-dep--create-handlers))
            (final-plugin (if (and plugin module-create)
                             (funcall module-create plugin)
@@ -63,7 +65,7 @@
 (defun amd-dep-to-var (dep)
   "For the given dependency, return a variable name"
   (setq dep (amd-dep-parse dep))
-  (let ((handler (amd-dep--assoc (amd-dep-plugin dep)
+  (let ((handler (amd--assoc (amd-dep-plugin dep)
                                 amd-dep--to-var-handlers)))
     (if handler
         (funcall handler (amd-dep-resource dep)))))
@@ -71,7 +73,7 @@
 (defun amd-dep-to-files (dep)
   "For the given dependency, return a file"
   (setq dep (amd-dep-parse dep))
-  (let ((handler (amd-dep--assoc (amd-dep-plugin dep)
+  (let ((handler (amd--assoc (amd-dep-plugin dep)
                                  amd-dep--to-files-handlers)))
     (if handler
         (funcall handler (amd-dep-resource dep)))))
@@ -82,8 +84,8 @@
   (if (listp dep-or-string)
       dep-or-string
     (when (string-match amd-dep--re dep-or-string)
-      (let* ((plugin (match-string 1 dep-or-string))
-             (resource (match-string 2 dep-or-string)))
+      (let* ((plugin (match-string-no-properties 1 dep-or-string))
+             (resource (match-string-no-properties 2 dep-or-string)))
         (amd-dep-create plugin resource)))))
 
 (defun amd-dep-format (dep)
@@ -126,7 +128,7 @@
   (let ((resource (js-pkg-file-to-res file)))
     (if (and resource
              (string-match "^\\(.*\\)\\.js$" resource))
-        (let ((module (match-string 1 resource)))
+        (let ((module (match-string-no-properties 1 resource)))
           (amd-dep-create nil module)))))
 
 (defun amd-dep--module-to-files (module)
@@ -135,67 +137,14 @@
 
 (defun amd-dep--module-to-var (resource)
   (if (string-match amd-dep--module-id-re resource)
-      (let ((name (match-string 1 resource)))
-        (s-lower-camel-case name))))
+      (let ((name (match-string-no-properties 1 resource)))
+        (amd--camelize name))))
 
 (amd-dep-register-plugin nil
   (lambda (resource) (amd-dep--module-create resource))
   (lambda (resource) (amd-dep--module-to-var resource))
   (lambda (file) (amd-dep--module-from-file file))
   (lambda (resource) (amd-dep--module-to-files resource)))
-
-; Handling for the text plugin
-
-(defun amd-dep--text-plugin-create (resource)
-  (js-pkg-res-id-normalize resource))
-
-(defun amd-dep--text-plugin-from-file (file)
-  (let ((resource (js-pkg-file-to-res file)))
-    (when resource
-      (amd-dep-create "text" resource))))
-
-(defun amd-dep--text-plugin-to-files (resource)
-  (js-pkg-res-to-files resource))
-
-(defun amd-dep--text-plugin-to-var (resource)
-  (s-lower-camel-case
-   (concat (file-name-sans-extension
-            (file-name-nondirectory resource))
-           "-" (file-name-extension resource))))
-
-(amd-dep-register-plugin "text"
-  (lambda (resource) (amd-dep--text-plugin-create resource))
-  (lambda (resource) (amd-dep--text-plugin-to-var resource))
-  (lambda (file) (amd-dep--text-plugin-from-file file))
-  (lambda (resource) (amd-dep--text-plugin-to-files resource)))
-
-; Handling for the dojo/text plugin
-
-(defun amd-dep--dojo-text-plugin-create (resource)
-  (js-pkg-res-id-normalize resource))
-
-(defun amd-dep--dojo-text-plugin-from-file (file)
-  (let ((resource (js-pkg-file-to-res file)))
-    (when resource
-      (amd-dep-create "dojo/text" resource))))
-
-(defun amd-dep--dojo-text-plugin-to-files (resource)
-  (js-pkg-res-to-files resource))
-
-(defun amd-dep--dojo-text-plugin-to-var (resource)
-  (s-lower-camel-case
-   (concat (file-name-sans-extension
-            (file-name-nondirectory resource))
-           "-" (file-name-extension resource))))
-
-(amd-dep-register-plugin "dojo/text"
-  (lambda (resource) (amd-dep--dojo-text-plugin-create resource))
-  (lambda (resource) (amd-dep--dojo-text-plugin-to-var resource))
-  (lambda (file) (amd-dep--dojo-text-plugin-from-file file))
-  (lambda (resource) (amd-dep--dojo-text-plugin-to-files resource)))
-
-(defun amd-dep--assoc (key list)
-  (cdr (assoc key list)))
 
 (provide 'amd-dep)
 ;;; amd-dep.el ends here

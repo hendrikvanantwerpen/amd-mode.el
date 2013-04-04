@@ -4,7 +4,7 @@
 
 ;; Author: Hendrik van Antwerpen <hendrik@van-antwerpen.net>
 ;; Version: 0.2.0
-;; Package-Requires: ((js-pkg "0.2.0") (semver "0.2.0") (dash "1.1.0") (s "1.3.1") (thingatpnt) (ido))
+;; Package-Requires: ((js2-mode "?.?.?") (js-pkg "0.2.0") (semver "0.2.0") (dash "1.1.0") (s "1.3.1") (ido))
 
 ;; This file is not part of GNU Emacs.
 
@@ -31,6 +31,7 @@
 
 (require 'amd-header)
 (require 'amd-dep)
+(require 'amd-util)
 
 ;; Minor mode & Commands
 
@@ -40,6 +41,7 @@
 (define-key amd-key-map (kbd "C-c a f") 'amd-add-file)
 (define-key amd-key-map (kbd "C-c a p") 'amd-register-pkg)
 (define-key amd-key-map (kbd "C-c a g") 'amd-goto)
+(define-key amd-key-map (kbd "C-c a r") 'amd-remove)
 
 (define-minor-mode amd-mode "AMD mode
 
@@ -123,6 +125,26 @@ dependencies in an AMD style Javascript module."
                      (when file
                        (find-file-other-window (nth 0 files))))))))))))
 
+(defun amd-remove ()
+  "Remove one of the dependencies"
+  (interactive)
+  (let ((header (amd-header-read)))
+    (if (not header)
+        (message "No AMD header found.")
+      (let* ((deps (amd-header-deps header))
+             (depstrs (-map 'amd-dep-format deps))
+             (dep-at-point (amd--dep-at-point header))
+             (suggested (when (member dep-at-point depstrs)
+                          dep-at-point))
+             (depstr (ido-completing-read
+                      "Remove dependency: " depstrs
+                      nil t suggested))
+             (dep (amd-dep-parse depstr)))
+        (if (not dep)
+            (message "Failed to parse dependency %s." depstr)
+          (amd-header-del-dep dep header)
+          (amd-header-write header))))))
+
 (defun amd-register-pkg ()
   "Add a package from a directory"
   (interactive)
@@ -143,14 +165,12 @@ dependencies in an AMD style Javascript module."
 
 (defun amd--dep-at-point (header)
   "Return a dep string for the current point."
-  (when (equal major-mode 'js2-mode)
-    (let ((node (js2-node-at-point)))
-      (when node
-        (cond ((equal (js2-node-short-name node) "js2-name-node")
-               (let ((dep (amd-header-dep-by-var (js2-node-string node) header)))
-                 (when dep (amd-dep-format dep))))
-              ((equal (js2-node-short-name node) "js2-string-node")
-               (substring (js2-node-string node) 1 -1)))))))
+  (let ((var (or (amd--js2-var-at-point)
+                 (word-at-point))))
+    (if var
+        (let ((dep (amd-header-dep-by-var var header)))
+          (when dep (amd-dep-format dep)))
+      (str (amd--js2-string-at-point)))))
 
 (defun amd--add-dep-to-header (dep)
   (let* ((var (read-string "Specify variable name: "
@@ -162,6 +182,16 @@ dependencies in an AMD style Javascript module."
     (amd-header-write header t)
     (message "Dependency '%s' added as variable '%s'"
              (amd-dep-format dep) final-var)))
-    
+
+(defun amd-config-default ()
+  (add-hook 'js2-mode-hook
+            (lambda () (amd-mode)))
+  (add-hook 'js2-post-parse-callbacks
+            'amd-externs-setup))
+
+(defun amd-externs-setup ()
+  (add-to-list 'js2-additional-externs "define")
+  (add-to-list 'js2-additional-externs "require"))
+
 (provide 'amd-mode)
 ;;; amd-mode.el ends here

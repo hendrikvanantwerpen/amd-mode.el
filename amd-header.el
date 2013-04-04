@@ -26,21 +26,21 @@
 
 (require 'dash)
 (require 's)
+(require 'amd-util)
 
 (setq amd-header--re
   (let*
       ((g< "\\(?:")
        (>g "\\)")
        (string (concat g< "\"[^\"]*\"\\|'[^']*'" >g))
-       (identifier "[_$[:alnum:]]+")
-       (ws* "[\n[:space:]]*")
-       (strings? (concat g< string
-                         g< ws* "," ws* string >g "*" >g "?"))
-       (identifiers? (concat g< identifier
-                             g< ws* "," ws* identifier >g "*" >g "?")))
-    (concat "^define" ws* "(" ws* "\\(\\[" ws* strings? ws* "\\]\\)" ws*
-            "," ws* "function" ws* "\\((" ws* identifiers? ws* ")\\)" ws*
-            "{")))
+       (strings? (concat (amd--seplist string) "?"))
+       (identifiers? (concat (amd--seplist amd--js-id) "?")))
+    (concat "^define" amd--ws*
+            "(" amd--ws* "\\(\\[" amd--ws* strings? amd--ws* "\\]\\)"
+            amd--ws* "," amd--ws*
+            "function" amd--ws*
+            "\\((" amd--ws* identifiers? amd--ws* ")\\)"
+            amd--ws* "{")))
 
 (defun amd-header-read ()
   "Read header from current buffer or nil."
@@ -94,7 +94,8 @@
   (amd-header--set-depvars
    (-remove (lambda (dv)
               (equal (car dv) dep))
-            (amd-header-depvars header))))
+            (amd-header-depvars header))
+   header))
 
 (defun amd-header-del-var (var header)
   "Delete the dependency with name var (cannot be nil)."
@@ -102,7 +103,8 @@
     (amd-header--set-depvars
      (-remove (lambda (v)
                 (equal (cdr v) var))
-              (amd-header-depvars header)))))
+              (amd-header-depvars header))
+     header)))
 
 (defun amd-header--set-depvars (depvars header)
   "Replace existing depvars with the given one.
@@ -173,8 +175,8 @@ This keeps everything in sorted order because anonymous dependencies have to com
     (when (search-forward-regexp amd-header--re nil t)
       (let ((start (match-beginning 0))
             (end (match-end 0))
-            (raw-deps (match-string 1))
-            (raw-vars (match-string 2)))
+            (raw-deps (match-string-no-properties 1))
+            (raw-vars (match-string-no-properties 2)))
         (let ((deps (amd-header--parse-deps raw-deps))
               (vars (amd-header--parse-vars raw-vars)))
           (list (cons start end) deps vars))))))
