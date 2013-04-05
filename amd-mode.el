@@ -170,7 +170,7 @@ dependencies in an AMD style Javascript module."
     (if var
         (let ((dep (amd-header-dep-by-var var header)))
           (when dep (amd-dep-format dep)))
-      (str (amd--js2-string-at-point)))))
+      (amd--js2-string-at-point))))
 
 (defun amd--add-dep-to-header (dep)
   (let* ((var (read-string "Specify variable name: "
