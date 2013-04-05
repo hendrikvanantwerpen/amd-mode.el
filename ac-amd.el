@@ -96,7 +96,7 @@
   (when (and var header)
     (let ((dep (amd-header-dep-by-var var header)))
       (when (and dep
-                 (not (amd-dep-plugin dep)))
+                 (amd-dep-module-p dep))
             (amd-dep-resource dep)))))
     
 (setq ac-source-amd-constructors

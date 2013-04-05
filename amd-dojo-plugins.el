@@ -31,18 +31,18 @@
 
 ; Handling for the dojo/text plugin
 
-(defun amd-dep--dojo-text-plugin-create (resource)
+(defun amd-dep-dojo-text-plugin-create (resource)
   (js-pkg-res-id-normalize resource))
 
-(defun amd-dep--dojo-text-plugin-from-file (file)
+(defun amd-dep-dojo-text-plugin-from-file (file)
   (let ((resource (js-pkg-file-to-res file)))
     (when resource
       (amd-dep-create "dojo/text" resource))))
 
-(defun amd-dep--dojo-text-plugin-to-files (resource)
+(defun amd-dep-dojo-text-plugin-to-files (resource)
   (js-pkg-res-to-files resource))
 
-(defun amd-dep--dojo-text-plugin-to-var (resource)
+(defun amd-dep-dojo-text-plugin-to-var (resource)
   (amd--camelize
    (concat (file-name-sans-extension
             (file-name-nondirectory resource))
@@ -50,10 +50,10 @@
 
 (defun amd-dojo-plugins-setup ()
   (amd-dep-register-plugin "dojo/text"
-    (lambda (resource) (amd-dep--dojo-text-plugin-create resource))
-    (lambda (resource) (amd-dep--dojo-text-plugin-to-var resource))
-    (lambda (file) (amd-dep--dojo-text-plugin-from-file file))
-    (lambda (resource) (amd-dep--dojo-text-plugin-to-files resource))))
+    (lambda (resource) (amd-dep-dojo-text-plugin-create resource))
+    (lambda (resource) (amd-dep-dojo-text-plugin-to-var resource))
+    (lambda (file) (amd-dep-dojo-text-plugin-from-file file))
+    (lambda (resource) (amd-dep-dojo-text-plugin-to-files resource))))
 
 (provide 'amd-dojo-plugins)
 ;;; amd-dojo-plugins.el ends here

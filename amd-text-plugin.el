@@ -27,18 +27,18 @@
 (require 'js-pkg)
 (require 's)
 
-(defun amd-dep--text-plugin-create (resource)
+(defun amd-dep-text-plugin-create (resource)
   (js-pkg-res-id-normalize resource))
 
-(defun amd-dep--text-plugin-from-file (file)
+(defun amd-dep-text-plugin-from-file (file)
   (let ((resource (js-pkg-file-to-res file)))
     (when resource
       (amd-dep-create "text" resource))))
 
-(defun amd-dep--text-plugin-to-files (resource)
+(defun amd-dep-text-plugin-to-files (resource)
   (js-pkg-res-to-files resource))
 
-(defun amd-dep--text-plugin-to-var (resource)
+(defun amd-dep-text-plugin-to-var (resource)
   (amd--camelize
    (concat (file-name-sans-extension
             (file-name-nondirectory resource))
@@ -46,10 +46,10 @@
 
 (defun amd-text-plugin-setup ()
   (amd-dep-register-plugin "text"
-    (lambda (resource) (amd-dep--text-plugin-create resource))
-    (lambda (resource) (amd-dep--text-plugin-to-var resource))
-    (lambda (file) (amd-dep--text-plugin-from-file file))
-    (lambda (resource) (amd-dep--text-plugin-to-files resource))))
+    (lambda (resource) (amd-dep-text-plugin-create resource))
+    (lambda (resource) (amd-dep-text-plugin-to-var resource))
+    (lambda (file) (amd-dep-text-plugin-from-file file))
+    (lambda (resource) (amd-dep-text-plugin-to-files resource))))
 
 (provide 'amd-text-plugin)
 ;;; amd-text-plugin.el ends here

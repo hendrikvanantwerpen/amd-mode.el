@@ -23,7 +23,7 @@ It provides the following interactive commands:
     amd-add-file ; [C-c a f] add dependency by selecting a file
     amd-add-pkg  ; [C-c a p] register AMD package
     amd-goto     ; [C-c a g] quickly select a dependency to open
-    amd-remove   ; [C-c a r] remove a dependency from the header
+    amd-remove   ; [C-c a x] remove a dependency from the header
 
 When selecting files as dependencies, the use of js-pkg.el makes sure that packages on disk are discovered. But unless a package is known, the 'amd-goto' will not work for resources of that package. It can be usefull to register packages that are used often/in a project, so everything works from the start. This can be done interactively by using 'amd-add-pkg' and selecting a package directory or by adding the following to 'init.el':
 

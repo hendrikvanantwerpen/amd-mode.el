@@ -41,7 +41,7 @@
 (define-key amd-key-map (kbd "C-c a f") 'amd-add-file)
 (define-key amd-key-map (kbd "C-c a p") 'amd-register-pkg)
 (define-key amd-key-map (kbd "C-c a g") 'amd-goto)
-(define-key amd-key-map (kbd "C-c a r") 'amd-remove)
+(define-key amd-key-map (kbd "C-c a x") 'amd-remove)
 
 (define-minor-mode amd-mode "AMD mode
 
