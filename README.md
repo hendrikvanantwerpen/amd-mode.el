@@ -75,19 +75,6 @@ This is what it looks like:
 ![Image](images/ac-amd-functions.png?raw=true)
 ![Image](images/ac-amd-constructors.png?raw=true)
 
-Wish list & known issues
-------------------------
-
- * Be carefull that file resolution for resources only works for packages with a package.json which includes at least a name and version.
- * Updating the header sometimes results in some extra whitespace before the header.
- * Support for package dependencies would be nice. Currently we only use a global list. We could check if the current package actually depends on the package of the resource or otherwise suggest to add it. We could also use this to pick the best fit version for a file if multiple versions of a package create choice.
-
-See also
---------
-
- * The requirejs-mode which served as inspiration to start this at https://github.com/purcell/requirejs-mode.
- * AMD documentation at http://requirejs.org.
-
 Install
 -------
 
@@ -101,6 +88,24 @@ El-get: Evaluate the following snippet and install 'amd-mode' with el-get-instal
              :pkgname "hendrikvanantwerpen/amd-mode.el"
              :depends (js2-mode js-pkg semver auto-complete dash s))
            el-get-sources))
+
+Known issues
+------------
+
+ * Be carefull that file resolution for resources only works for packages with a package.json which includes at least a name and version.
+ * Updating the header sometimes results in some extra whitespace before the header.
+
+Ideas
+-----
+
+ * Support package dependencies. Currently we only use a global list. We could check if the current package actually depends on the package of the resource or otherwise suggest to add it. We could also use this to pick the best fit version for a file if multiple versions of a package create choice.
+ * Add snippets for Dojo class and widgets. Maybe in that case Dojo support should be a separate package, with the plugin and completions.
+
+See also
+--------
+
+ * The requirejs-mode which served as inspiration to start this at https://github.com/purcell/requirejs-mode.
+ * AMD documentation at http://requirejs.org.
 
 License
 -------
