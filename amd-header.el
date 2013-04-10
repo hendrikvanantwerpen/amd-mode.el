@@ -57,11 +57,14 @@
               add-if-new)
       (save-excursion
         (if match
-            (delete-region (car (nth 0 match))
-                           (cdr (nth 0 match)))
-          ; how can we indent the existing code?
+            (progn
+              (delete-region (car (nth 0 match))
+                             (cdr (nth 0 match)))
+              (goto-char (car (nth 0 match))))
           (goto-char (point-max))
           (insert "\n});\n")
+          (goto-char (point-min))
+          (insert "\n")
           (goto-char (point-min)))
         (insert (amd-header--format header))))))
 
@@ -77,7 +80,7 @@
 (defun amd-header-add (dep var header)
   "Add the dependency to the header with name var (can be nil)."
   (setq dep (amd-dep-parse dep))
-  (unless (amd-header-dep-by-var dep header)
+  (unless (amd-header-var-by-dep dep header)
     (let* ((unique-var (and var
                             (amd-header--unique-var
                              (amd-header--safe-var var)
@@ -203,14 +206,14 @@ This keeps everything in sorted order because anonymous dependencies have to com
 (defun amd-header--format (header)
   "Format the given header to a string."
   (concat
-   "define([\n"
-   (s-join ",\n" (mapcar (lambda (s)
-                           (concat "    \"" s "\""))
+   "define(["
+   (s-join "," (mapcar (lambda (s)
+                           (concat "\n    \"" s "\""))
                          (-map 'amd-dep-format
                                (amd-header-deps header))))
-   "\n],function("
+   "\n], function("
    (s-join ", " (amd-header-vars header))
-   ") {\n"))
+   ") {"))
 
 (defun amd-header--safe-var (var)
   "Return the string with unsafe characters removed."

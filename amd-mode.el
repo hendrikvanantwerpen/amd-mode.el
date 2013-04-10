@@ -56,7 +56,7 @@ dependencies in an AMD style Javascript module."
   (save-excursion
     (if (amd-header-read)
         (message "AMD header already exists.")
-      (amd-header-write (amd-header-create)))))
+      (amd-header-write (amd-header-create) t))))
 
 (defun amd-add-dep ()
   "Add AMD dependency to header"
@@ -105,7 +105,8 @@ dependencies in an AMD style Javascript module."
       (let* ((deps (amd-header-deps header))
              (depstrs (-map 'amd-dep-format deps))
              (dep-at-point (amd--dep-at-point header))
-             (suggested (when (member dep-at-point depstrs)
+             (suggested (when (and dep-at-point
+                                   (member dep-at-point depstrs))
                           dep-at-point))
              (depstr (ido-completing-read
                       "Open dependency: " depstrs
@@ -123,7 +124,7 @@ dependencies in an AMD style Javascript module."
                    (let ((file (ido-completing-read
                                 "Select from options: " files)))
                      (when file
-                       (find-file-other-window (nth 0 files))))))))))))
+                       (find-file-other-window file)))))))))))
 
 (defun amd-remove ()
   "Remove one of the dependencies"
@@ -173,15 +174,19 @@ dependencies in an AMD style Javascript module."
       (amd--js2-string-at-point))))
 
 (defun amd--add-dep-to-header (dep)
-  (let* ((var (read-string "Specify variable name: "
-                           (amd-dep-to-var dep)))
-         (var-or-nil (when (not (s-blank? var)) var))
-         (header (or (amd-header-read)
-                     (amd-header-create)))
-         (final-var (amd-header-add dep var-or-nil header)))
-    (amd-header-write header t)
-    (message "Dependency '%s' added as variable '%s'"
-             (amd-dep-format dep) final-var)))
+  (let* ((pre-header (amd-header-read))
+         (pre-var (and pre-header (amd-header-var-by-dep dep pre-header))))
+    (if pre-var
+        (message "Dependency '%s' already exists as variable '%s'"
+                 (amd-dep-format dep) pre-var)
+      (let* ((var (read-string "Specify variable name: "
+                               (amd-dep-to-var dep)))
+             (var-or-nil (when (not (s-blank? var)) var))
+             (header (or pre-header (amd-header-create)))
+             (final-var (amd-header-add dep var-or-nil header)))
+        (amd-header-write header t)
+        (message "Dependency '%s' added as variable '%s'"
+                 (amd-dep-format dep) final-var)))))
 
 (defun amd-config-default ()
   (add-hook 'js2-mode-hook

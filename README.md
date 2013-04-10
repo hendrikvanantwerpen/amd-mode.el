@@ -92,14 +92,19 @@ El-get: Evaluate the following snippet and install 'amd-mode' with el-get-instal
 Known issues
 ------------
 
- * Be carefull that file resolution for resources only works for packages with a package.json which includes at least a name and version.
- * Updating the header sometimes results in some extra whitespace before the header.
+ * Be aware that file resolution for resources only works for packages with a package.json which includes at least a name and version.
+ * Unknown dependencies (like dojo/romReady!) produce a nil value, breaking amd-goto. We should adopt a more open-world approach, leaving
+   unknown formats alone instead of treating them as errors.
+ * If a new header is inserted, the code inside the function is not indented.
 
 Ideas
 -----
 
  * Support package dependencies. Currently we only use a global list. We could check if the current package actually depends on the package of the resource or otherwise suggest to add it. We could also use this to pick the best fit version for a file if multiple versions of a package create choice.
  * Add snippets for Dojo class and widgets. Maybe in that case Dojo support should be a separate package, with the plugin and completions.
+ * Add rename refactoring for AMD modules. Think about cases rename current module, module in current package, module in other package.
+ * Add a command to navigate to a dependency in the same window.
+ * Represent optional parameters in auto-completion different (you cannot 'cw' them because the _'s are word boundaries).
 
 See also
 --------
