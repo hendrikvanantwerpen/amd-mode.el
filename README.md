@@ -17,13 +17,14 @@ It provides commands to manipulate the 'define' header and add/remove dependenci
 
 It provides the following interactive commands:
 
-    amd-mode     ; enable AMD mode with key bindings
-    amd-init     ; [C-c a i] add AMD header to current file if not already present
-    amd-add-dep  ; [C-c a d] add a dependency, specified manually
-    amd-add-file ; [C-c a f] add dependency by selecting a file
-    amd-add-pkg  ; [C-c a p] register AMD package
-    amd-goto     ; [C-c a g] quickly select a dependency to open
-    amd-remove   ; [C-c a x] remove a dependency from the header
+    amd-mode              ; enable AMD mode with key bindings
+    amd-init              ; [C-c a i] add AMD header to current file if not already present
+    amd-add-dep           ; [C-c a d] add a dependency, specified manually
+    amd-add-file          ; [C-c a f] add dependency by selecting a file
+    amd-add-pkg           ; [C-c a p] register AMD package
+    amd-goto              ; [C-c a g] quickly select a dependency to open
+    amd-goto-other-window ; [C-c a G] quickly select a dependency to open
+    amd-remove            ; [C-c a x] remove a dependency from the header
 
 When selecting files as dependencies, the use of js-pkg.el makes sure that packages on disk are discovered. But unless a package is known, the 'amd-goto' will not work for resources of that package. It can be usefull to register packages that are used often/in a project, so everything works from the start. This can be done interactively by using 'amd-add-pkg' and selecting a package directory or by adding the following to 'init.el':
 
@@ -103,7 +104,6 @@ Ideas
  * Support package dependencies. Currently we only use a global list. We could check if the current package actually depends on the package of the resource or otherwise suggest to add it. We could also use this to pick the best fit version for a file if multiple versions of a package create choice.
  * Add snippets for Dojo class and widgets. Maybe in that case Dojo support should be a separate package, with the plugin and completions.
  * Add rename refactoring for AMD modules. Think about cases rename current module, module in current package, module in other package.
- * Add a command to navigate to a dependency in the same window.
  * Represent optional parameters in auto-completion different (you cannot 'cw' them because the _'s are word boundaries).
 
 See also

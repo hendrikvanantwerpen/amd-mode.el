@@ -41,6 +41,7 @@
 (define-key amd-key-map (kbd "C-c a f") 'amd-add-file)
 (define-key amd-key-map (kbd "C-c a p") 'amd-register-pkg)
 (define-key amd-key-map (kbd "C-c a g") 'amd-goto)
+(define-key amd-key-map (kbd "C-c a G") 'amd-goto-other-window)
 (define-key amd-key-map (kbd "C-c a x") 'amd-remove)
 
 (define-minor-mode amd-mode "AMD mode
@@ -97,8 +98,21 @@ dependencies in an AMD style Javascript module."
                 (save-buffer)))))))))
 
 (defun amd-goto ()
-  "Open one of the dependencies"
+  "Open one of the dependencies in this window."
   (interactive)
+  (let ((file (amd--get-goto-file)))
+    (when file
+      (find-file file))))
+
+(defun amd-goto-other-window ()
+  "Open one of the dependencies in a different window."
+  (interactive)
+  (let ((file (amd--get-goto-file)))
+    (when file
+      (find-file-other-window file))))
+
+(defun amd--get-goto-file ()
+  "Return the file after selecting a dependency or nil."
   (let ((header (amd-header-read)))
     (if (not header)
         (message "No AMD header found.")
@@ -119,12 +133,9 @@ dependencies in an AMD style Javascript module."
             (cond ((= count 0)
                    (message "No file found for dependency %s." depstr))
                   ((= count 1)
-                   (find-file-other-window (nth 0 files)))
+                   (nth 0 files))
                   (t
-                   (let ((file (ido-completing-read
-                                "Select from options: " files)))
-                     (when file
-                       (find-file-other-window file)))))))))))
+                   (ido-completing-read "Select from options: " files)))))))))
 
 (defun amd-remove ()
   "Remove one of the dependencies"
