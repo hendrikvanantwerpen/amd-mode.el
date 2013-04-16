@@ -35,7 +35,7 @@
 (setq amd-dep--from-file-handlers nil)
 
 (defvar amd-dep--re
-  "^\\(?:\\(\\(?:[[:alnum:]-_\.]+/\\)*[[:alnum:]-_]+\\)!\\)?\\(.*\\)$")
+  "^\\(?:\\(\\(?:[[:alnum:]-_.]+/\\)*[[:alnum:]-_]+\\)!\\)?\\(.*\\)$")
 
 (defun amd-dep-create (plugin resource)
   (let ((dep (cons plugin resource)))
@@ -118,11 +118,15 @@
 ; Handling of AMD modules
 
 (setq amd-dep--module-id-re
-      "^\\(?:[[:alnum:]-_\.]+/\\)*\\([[:alnum:]-_\.]+\\)$")
+      "^\\([[:alnum:]-_.]+://\\|/\\)?\\(?:[[:alnum:]-_.]+/\\)*\\([[:alnum:]-_.]+?\\)\\(\\.js\\)?$")
 
 (defun amd-dep-module-create (resource)
-  (if (string-match amd-dep--module-id-re resource)
-      (js-pkg-res-id-normalize resource)))
+  (let ((match (s-match amd-dep--module-id-re resource)))
+    (when match
+      (if (or (nth 1 match)
+              (nth 3 match))
+          resource
+        (js-pkg-res-id-normalize resource)))))
 
 (defun amd-dep-module-from-file (file)
   (let ((resource (js-pkg-file-to-res file)))
@@ -131,14 +135,17 @@
         (let ((module (match-string-no-properties 1 resource)))
           (amd-dep-create nil module)))))
 
-(defun amd-dep-module-to-files (module)
-  (let ((resource (concat module ".js")))
-    (js-pkg-res-to-files resource)))
+(defun amd-dep-module-to-files (resource)
+  (let ((match (s-match amd-dep--module-id-re resource)))
+    (unless (or (not match)
+                (nth 1 match)
+                (nth 3 match))
+      (js-pkg-res-to-files (concat resource ".js")))))
 
 (defun amd-dep-module-to-var (resource)
-  (if (string-match amd-dep--module-id-re resource)
-      (let ((name (match-string-no-properties 1 resource)))
-        (amd--camelize name))))
+  (let ((match (s-match amd-dep--module-id-re resource)))
+  (when match
+    (amd--camelize (nth 2 match)))))
 
 (defun amd-dep-module-p (dep)
   "Return t if the given dependency is a module dependency."

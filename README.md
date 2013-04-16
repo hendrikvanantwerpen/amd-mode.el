@@ -122,7 +122,6 @@ el-get-install.
 Known issues
 ------------
 
- * Dependencies ending in .js are not handled explicitly.
  * Be aware that file resolution for resources only works for packages
    with a package.json which includes at least a name and version.
  * If a new header is inserted, the code inside the function is not indented.
