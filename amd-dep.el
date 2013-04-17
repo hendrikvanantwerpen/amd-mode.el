@@ -35,7 +35,7 @@
 (setq amd-dep--from-file-handlers nil)
 
 (defvar amd-dep--re
-  "^\\(?:\\(\\(?:[[:alnum:]-_.]+/\\)*[[:alnum:]-_]+\\)!\\)?\\(.*\\)$")
+  "^\\(?:\\(\\(?:[[:alnum:]-_.]+/\\)*[[:alnum:]-_]+\\)!\\)?\\(\\|.*\\)$")
 
 (defun amd-dep-create (plugin resource)
   (let ((dep (cons plugin resource)))
@@ -49,8 +49,8 @@
            (final-resource (if plugin-create
                               (funcall plugin-create resource)
                             resource)))
-      (if final-resource
-          (cons final-plugin final-resource)))))
+      (when final-resource
+        (cons final-plugin final-resource)))))
 
 (defun amd-deps-from-file (file)
   "For the given file, return possible AMD dependencies"
