@@ -53,20 +53,27 @@
 (defun amd-header-write (header &optional add-if-new)
   "Write the header to the current buffer (replace existing one)."
   (let ((match (amd-header--match)))
-    (when (or match
-              add-if-new)
-      (save-excursion
-        (if match
-            (progn
-              (delete-region (car (nth 0 match))
-                             (cdr (nth 0 match)))
-              (goto-char (car (nth 0 match))))
-          (goto-char (point-max))
-          (insert "\n});\n")
-          (goto-char (point-min))
-          (insert "\n")
-          (goto-char (point-min)))
-        (insert (amd-header--format header))))))
+    (save-excursion
+      (cond (match
+             (delete-region (car (nth 0 match))
+                            (cdr (nth 0 match)))
+             (goto-char (car (nth 0 match)))
+             (insert (amd-header--format header)))
+            (add-if-new
+             (let ((body-min nil)
+                   (body-max nil))
+               (goto-char (point-min))
+               (insert (amd-header--format header))      
+               (setq body-min (point))
+               (insert "\n")
+               (goto-char (point-max))
+               (when (and (eobp) (not (bolp)))
+                 (insert "\n"))
+               (setq body-max (point))
+               (insert "});\n")
+               (print body-min)
+               (print body-max)
+               (indent-region body-min body-max)))))))
 
 (defun amd-header-create (&optional deps vars)
   "Create a new header with the given dependencies and variable names (expected in corresponding order)."

@@ -124,7 +124,6 @@ Known issues
 
  * Be aware that file resolution for resources only works for packages
    with a package.json which includes at least a name and version.
- * If a new header is inserted, the code inside the function is not indented.
  * Single file packages are not supported yet.
  * Explicit module ids in define(...) that differ from their path are not supported.
 
