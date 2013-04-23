@@ -146,7 +146,7 @@ dependencies in an AMD style Javascript module."
           (message "No AMD header found.")
         (let* ((deps (amd-header-deps header))
                (depstrs (-map 'amd-dep-format deps))
-               (-at-point (amd--dep-at-point header))
+               (dep-at-point (amd--dep-at-point header))
                (suggested (when (member dep-at-point depstrs)
                             dep-at-point))
                (depstr (ido-completing-read
