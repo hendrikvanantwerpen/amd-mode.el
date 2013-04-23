@@ -127,11 +127,14 @@ dependencies in an AMD style Javascript module."
                       nil t suggested))
              (dep (amd-dep-parse depstr)))
         (if (not dep)
-            (message "Failed to parse dependency %s." depstr)
+            (progn
+              (message "Failed to parse dependency %s." depstr)
+              nil)
           (let* ((files (amd-dep-to-files dep))
                  (count (length files)))
             (cond ((= count 0)
-                   (message "No file found for dependency %s." depstr))
+                   (message "No file found for dependency %s." depstr)
+                   nil)
                   ((= count 1)
                    (nth 0 files))
                   (t
@@ -177,7 +180,7 @@ dependencies in an AMD style Javascript module."
              (js-pkg-info-create name version directory))))))))
 
 (defun amd--dep-at-point (header)
-  "Return a dep string for the current point."
+  "Return a dep string for the current point or nil."
   (let ((var nil)
         (depstr nil))
     (setq var (amd--js2-var-at-point))
@@ -191,6 +194,7 @@ dependencies in an AMD style Javascript module."
             (when dep (amd-dep-format dep)))))))
 
 (defun amd--add-dep-to-header (dep)
+  "Add dependency to the header, possibly creating the header."
   (let* ((pre-header (amd-header-read))
          (pre-var (and pre-header (amd-header-var-by-dep dep pre-header))))
     (if pre-var
