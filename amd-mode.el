@@ -140,22 +140,23 @@ dependencies in an AMD style Javascript module."
 (defun amd-remove ()
   "Remove one of the dependencies"
   (interactive)
-  (let ((header (amd-header-read)))
-    (if (not header)
-        (message "No AMD header found.")
-      (let* ((deps (amd-header-deps header))
-             (depstrs (-map 'amd-dep-format deps))
-             (dep-at-point (amd--dep-at-point header))
-             (suggested (when (member dep-at-point depstrs)
-                          dep-at-point))
-             (depstr (ido-completing-read
-                      "Remove dependency: " depstrs
-                      nil t suggested))
-             (dep (amd-dep-parse depstr)))
-        (if (not dep)
-            (message "Failed to parse dependency %s." depstr)
-          (amd-header-del-dep dep header)
-          (amd-header-write header))))))
+  (save-excursion
+    (let ((header (amd-header-read)))
+      (if (not header)
+          (message "No AMD header found.")
+        (let* ((deps (amd-header-deps header))
+               (depstrs (-map 'amd-dep-format deps))
+               (-at-point (amd--dep-at-point header))
+               (suggested (when (member dep-at-point depstrs)
+                            dep-at-point))
+               (depstr (ido-completing-read
+                        "Remove dependency: " depstrs
+                        nil t suggested))
+               (dep (amd-dep-parse depstr)))
+          (if (not dep)
+              (message "Failed to parse dependency %s." depstr)
+            (amd-header-del-dep dep header)
+            (amd-header-write header)))))))
 
 (defun amd-register-pkg ()
   "Add a package from a directory"
@@ -177,12 +178,17 @@ dependencies in an AMD style Javascript module."
 
 (defun amd--dep-at-point (header)
   "Return a dep string for the current point."
-  (let ((var (or (amd--js2-var-at-point)
-                 (word-at-point))))
-    (if var
-        (let ((dep (amd-header-dep-by-var var header)))
-          (when dep (amd-dep-format dep)))
-      (amd--js2-string-at-point))))
+  (let ((var nil)
+        (depstr nil))
+    (setq var (amd--js2-var-at-point))
+    (unless var
+      (setq depstr (amd--js2-string-at-point)))
+    (unless (or depstr var)
+      (setq var (word-at-point)))
+    (or depstr
+        (when var
+          (let ((dep (amd-header-dep-by-var var header)))
+            (when dep (amd-dep-format dep)))))))
 
 (defun amd--add-dep-to-header (dep)
   (let* ((pre-header (amd-header-read))
